@@ -1,7 +1,9 @@
 package com.ecepolat.services.impl;
 
+import com.ecepolat.dto.DtoCourse;
 import com.ecepolat.dto.DtoStudent;
 import com.ecepolat.dto.DtoStudentIU;
+import com.ecepolat.entities.Course;
 import com.ecepolat.entities.Student;
 import com.ecepolat.repository.StudentRepository;
 import com.ecepolat.services.IStudentService;
@@ -46,13 +48,23 @@ public class StudentServiceImpl implements IStudentService {
 
     @Override
     public DtoStudent getStudentById(Integer id) {
-        DtoStudent dto = new DtoStudent();
-        Optional<Student> optional = studentRepository.findStudentById(id);
-        if(optional.isPresent()){
-            Student dbStudent = optional.get();
-            BeanUtils.copyProperties(dbStudent, dto);
+        DtoStudent dtoStudent = new DtoStudent();
+        Optional<Student> optional = studentRepository.findById(id);
+        if(optional.isEmpty()){
+            return null;
         }
-        return dto;
+        Student dbStudent = optional.get();
+        BeanUtils.copyProperties(dbStudent, dtoStudent);
+
+        if (dbStudent.getCourses()!= null && !dbStudent.getCourses().isEmpty()){
+            for (Course course : dbStudent.getCourses()){
+                DtoCourse dtoCourse = new DtoCourse();
+                BeanUtils.copyProperties(course, dtoCourse);
+
+                dtoStudent.getCourses().add(dtoCourse);
+            }
+        }
+        return dtoStudent;
     }
 
     @Override
